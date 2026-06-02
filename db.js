@@ -1,13 +1,4 @@
-const dns = require("dns");
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const mongoose = require("mongoose");
-mongoose.connect("mongodb+srv://manasi123:manu123@cluster1.gkye6zg.mongodb.net/coursera")
-.then(()=>{
-console.log("Connected");
-})
-.catch((err) => {
-    console.log(err);
-})
 const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -33,7 +24,7 @@ const courseSchema =  new Schema ({
     description: String,
     price: Number,
     imageUrl : String,
-    createId : ObjectId
+    creatorId : ObjectId
 })
 
 const purchaseSchema =  new Schema ({
