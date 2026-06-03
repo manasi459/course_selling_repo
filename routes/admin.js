@@ -4,6 +4,8 @@ const {adminModel, courseModel } = require("../db");
 const {JWT_ADMIN_PASSWORD} =  require("../config.js");
 const bcrypt  = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { adminMiddleware } = require("../middleware/admin");
+
 
 adminRouter.post("/signup" ,async  function(req,res){
    try {
@@ -58,11 +60,11 @@ if(admin){
 }
 })
 
-adminRouter.post("/course" , async function(req,res){
+adminRouter.post("/course" , adminMiddleware , async function(req,res){
     const adminId = req.userId;
-    const{title, description , imageUrl , price } = req.body;
+    const {title, description , imageUrl , price } = req.body;
 
-    await courseModel.create({
+   const course =  await courseModel.create({
         title, description , imageUrl , price , creatorId : adminId
     })
     res.json({
@@ -72,11 +74,14 @@ adminRouter.post("/course" , async function(req,res){
 })
 
 
-adminRouter.put("/course" , async  function(req,res){
+adminRouter.put("/course" , adminMiddleware , async  function(req,res){
+    const adminId  = req.userId;
     const { title , description , imageUrl , price , courseId } = req.body;
 
-    await courseModel.updateOne(
-        {_id: courseId},
+ const updatedCourse = await courseModel.updateOne({
+   _id: courseId,
+   creatorId : adminId
+},
         {
             title,
             description,
@@ -92,8 +97,11 @@ adminRouter.put("/course" , async  function(req,res){
 });
 
 
-adminRouter.get("/course/bulk" , async  function(req,res){
-    const courses = await courseModel.find();
+adminRouter.get("/course/bulk" , adminMiddleware,  async  function(req,res){
+    const adminId = req.userId;
+    const courses = await courseModel.find({
+        creatorId : adminId
+    });
     res.json({
         courses
     });
