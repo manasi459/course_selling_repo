@@ -1,5 +1,6 @@
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
+require(dotenv).config()
 const express = require("express");
 const mongoose  = require("mongoose");
 const {courseRouter} = require("./routes/course");
@@ -13,7 +14,7 @@ app.use("/course", courseRouter);
 app.use("/admin", adminRouter);
 
 async function main(){
-   await mongoose.connect("mongodb+srv://manasi123:manu123@cluster1.gkye6zg.mongodb.net/coursera")
+   await mongoose.connect(process.env.MONGO_URL)
    app.listen(3000);
    console.log("listening to port 3000");
 }
