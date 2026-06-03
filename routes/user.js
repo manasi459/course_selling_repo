@@ -3,7 +3,7 @@ const {userModel} = require("../db");
 const userRouter = Router();
 const bcrypt  = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const JWT_USER_PASSWORD = "Anu123";
+const {JWT_USER_PASSWORD} =  require("../config.js");
 
 userRouter.post("/signup" , async function(req,res){
  try {

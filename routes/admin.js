@@ -1,40 +1,103 @@
 const {Router} = require("express");
 const adminRouter = Router();
-const {adminModel } = require("../db");
+const {adminModel, courseModel } = require("../db");
+const {JWT_ADMIN_PASSWORD} =  require("../config.js");
+const bcrypt  = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+adminRouter.post("/signup" ,async  function(req,res){
+   try {
+       const {email, password, firstName , lastName}  = req.body;
+       
+   // hash the password so the plaintext is not stored in DB
+   const hashedPassword = await bcrypt.hash(password , 10);
+   
+       await adminModel.create({
+           email,
+           password: hashedPassword,
+           firstName,
+           lastName
+       })
+       res.json({
+           message: "signup succeded"
+       });
+   
+   } catch(err) {
+       res.status(500).json({
+       message : "Something went wrong",
+       error : err.message
+       });
+   }
+   
+})
 
 
-adminRouter.post("/signup" , function(req,res){
+adminRouter.post("/signin" ,async function(req,res){
+   const {email, password} = req.body;
+
+const admin =  await adminModel.findOne({
+    email: email,
+});
+
+const passwordMatch = await bcrypt.compare(
+    password , admin.password
+);
+
+if(admin){
+  const token =  jwt.sign({
+    id: admin._id
+   },JWT_ADMIN_PASSWORD);
+
+   res.json({
+    token: token
+   })
+}else{
+    res.status(403).json({
+        message: "Incorrect credentials"
+    })
+}
+})
+
+adminRouter.post("/course" , async function(req,res){
+    const adminId = req.userId;
+    const{title, description , imageUrl , price } = req.body;
+
+    await courseModel.create({
+        title, description , imageUrl , price , creatorId : adminId
+    })
     res.json({
-        message: "signup endpoint"
+        message: "Course created",
+        courseId : course._id
     })
 })
 
 
-adminRouter.post("/signin" , function(req,res){
+adminRouter.put("/course" , async  function(req,res){
+    const { title , description , imageUrl , price , courseId } = req.body;
+
+    await courseModel.updateOne(
+        {_id: courseId},
+        {
+            title,
+            description,
+            imageUrl,
+            price
+        }
+
+        );
+    
     res.json({
-        message: "signin endpoint"
-    })
-})
+        message: "course updated"
+    });
+});
 
-adminRouter.post("/course" , function(req,res){
+
+adminRouter.get("/course/bulk" , async  function(req,res){
+    const courses = await courseModel.find();
     res.json({
-        message: "signin endpoint"
-    })
-})
-
-
-adminRouter.put("/course" , function(req,res){
-    res.json({
-        message: "signin endpoint"
-    })
-})
-
-
-adminRouter.get("/course/bulk" , function(req,res){
-    res.json({
-        message: "signin endpoint"
-    })
-})
+        courses
+    });
+});
 
 module.exports ={
     adminRouter : adminRouter
