@@ -4,6 +4,9 @@ const userRouter = Router();
 const bcrypt  = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const {JWT_USER_PASSWORD} =  require("../config.js");
+const {purchaseModel} = require("../db");
+const course = require("./course.js");
+const { courseModel } = require("../db");
 
 userRouter.post("/signup" , async function(req,res){
  try {
@@ -60,9 +63,20 @@ if(user){
 
 
 
-userRouter.get("/purchases" , function(req,res){
+userRouter.get("/purchases" , async  function(req,res){
+    const userId = req.body.userId;
+
+   const purchases =  await purchaseModel.find({
+            userId
+        });
+
+        const coursesData = await courseModel.find({
+            _id : { $in: purchases.map( x => x.courseId)}
+        })
+
     res.json({
-        message: "signup endpoint"
+       purchases,
+       coursesData
     })
 }) 
 
